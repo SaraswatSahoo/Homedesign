@@ -1,6 +1,5 @@
 import { Canvas } from "@react-three/fiber"
-import "./App.css"
-import * as THREE from "three";
+import "./App.css";
 import Room from "./component/Room";
 import ToggleButtons from "./component/ToggleButtons";
 import BottomBar from "./component/BottomBar";
