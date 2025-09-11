@@ -1,9 +1,10 @@
-import { OrbitControls, useGLTF } from "@react-three/drei"
-import { useEffect, useState } from "react";
+import { OrbitControls } from "@react-three/drei"
+import { Suspense, useEffect, useState } from "react";
+import RoomContent from "./RoomContent";
 
-export default function Room({ scale, position, rotation, roomNumber }: { scale?: number, position?: [number, number, number], rotation?: [number, number, number], roomNumber: number }) {
+export default function Room({ scale, position, rotation, roomNumber, setSelectedWall }: { scale?: number, position?: [number, number, number], rotation?: [number, number, number], roomNumber: number, setSelectedWall: any }) {
 
-    const [ roomScene, setRoomScene ] = useState("/models/livingroom.glb");
+    const [ roomScene, setRoomScene ] = useState("");
 
     useEffect(()=>{
         if(roomNumber == 1) setRoomScene("./models/livingroom.glb");
@@ -11,12 +12,12 @@ export default function Room({ scale, position, rotation, roomNumber }: { scale?
         else if(roomNumber == 3) setRoomScene("./models/kitchen.glb");
     },[roomNumber]);
 
-    const { scene } = useGLTF(roomScene);
-
     return(
         <>
-            <primitive object={scene} scale={scale} position={position} rotation={rotation} onPointerDown={(e:Event)=>{console.log(e)}}/>
-            <OrbitControls enableZoom={true} />
+            <Suspense fallback={null}>
+                <RoomContent key={roomNumber} roomScene={roomScene} scale={scale} position={position} rotation={rotation} setSelectedWall={setSelectedWall}/>
+                <OrbitControls enableZoom={true} enablePan={true} enableRotate={true} />
+            </Suspense>
         </>
     )
     
