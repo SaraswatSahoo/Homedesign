@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber"
-import "./App.css"
+import "./App.css";
 import Room from "./component/Room";
 import ToggleButtons from "./component/ToggleButtons";
 import BottomBar from "./component/BottomBar";
@@ -22,6 +22,8 @@ export default function App(){
   useEffect(()=>{
     if(selectedWall && wallColor){
       selectedWall.material.color.set(wallColor);
+      setSelectedWall(null);
+      setWallColor("");
     }
   },[wallColor, selectedWall]);
 
