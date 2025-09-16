@@ -1,6 +1,6 @@
 import { Circle, SofaIcon } from "lucide-react";
 
-export default function BottomBar({setWallColor}:{setWallColor: any}){
+export default function BottomBar({setWallColor, setFurniture}:{setWallColor: any, setFurniture: any}) {
     return(
         <div className=" text-white text-[20px] font-semibold border rounded-[20px] flex items-center justify-around">
             <div className=" p-[20px]">
@@ -29,8 +29,8 @@ export default function BottomBar({setWallColor}:{setWallColor: any}){
                 </div>
                 <div className="text-[15px]">ADD FURNITURE</div>
                 <div className=" flex text-[15px] justify-center items-center space-x-2">
-                    <div className="border rounded-[10px] p-[10px]">ADD SOFA</div>
-                    <div className="border rounded-[10px] p-[10px]">ADD BED</div>
+                    <button className="border rounded-[10px] p-[10px]">ADD SOFA</button>
+                    <button className="border rounded-[10px] p-[10px]" onClick={()=> setFurniture([0,0.4,0])}>ADD BED</button>
                 </div>
             </div>
         </div>
