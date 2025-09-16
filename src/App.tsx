@@ -22,6 +22,8 @@ export default function App(){
   useEffect(()=>{
     if(selectedWall && wallColor){
       selectedWall.material.color.set(wallColor);
+      setSelectedWall(null);
+      setWallColor("");
     }
   },[wallColor, selectedWall]);
 
