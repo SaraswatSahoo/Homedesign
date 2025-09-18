@@ -1,23 +1,5 @@
-import { useEffect, useState } from "react";
-
-function RoomDesign1({ setSelectedWall, room }: {setSelectedWall?: (wall: any) => void, room: string}) {
-
-    const [ wall1Color, setWall1Color ] = useState("#778979");
-    const [ wall2Color, setWall2Color ] = useState("#ccdcc1");
-
-    useEffect(()=>{
-        if(room == "Living Room"){
-            setWall1Color("#778979");
-            setWall2Color("#ccdcc1");
-        } else if(room == "Bedroom"){
-            setWall1Color("#a3c4bc");
-            setWall2Color("#f7ede2");
-        } else if(room == "Kitchen"){
-            setWall1Color("#dbe7e4");
-            setWall2Color("#f1f3f2");
-        }
-    },[room]);
-    
+function RoomDesign1({ setSelectedWall, wall1Color, wall2Color}: {setSelectedWall?: (wall: any) => void, wall1Color: string, wall2Color: string}) {
+   
   return (
     <>
         {/* Floor block */}
