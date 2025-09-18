@@ -9,13 +9,15 @@ export default function Furniture({
   position,
   onDrag,
   orbitControlsRef,
+  furnitureName
 }: {
   position?: [number, number, number];
   onDrag?: (pos: [number, number, number]) => void;
   orbitControlsRef: any;
+  furnitureName: string;
 }) {
-  
-  const { scene } = useGLTF("./models/DoubleBed.glb");
+
+  const { scene } = useGLTF(`./models/${furnitureName}.glb`);
   const [isPicked, setIsPicked] = useState(false);
   const [pos, setPos] = useState<[number, number, number]>(position ?? [0, 0.4, 0]);
   const { camera, gl } = useThree();
@@ -72,12 +74,12 @@ export default function Furniture({
     <primitive
       object={scene}
       position={pos}
-      scale={0.5}
+      scale={1}
       onPointerDown={(e: React.PointerEvent) => {
         e.stopPropagation(); // prevent clicks from reaching background
         setIsPicked(true);
       }}
-      onPointerUp={() => setIsPicked(false)}
+      onPointerUp={(e: React.PointerEvent) => {e.stopPropagation(); setIsPicked(false)}}
     />
   );
 }
