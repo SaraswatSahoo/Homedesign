@@ -1,12 +1,12 @@
 import { Canvas } from "@react-three/fiber"
 import "./App.css";
 import ToggleButtons from "./component/ToggleButtons";
-import BottomBar from "./component/BottomBar";
 import { Suspense, useEffect, useRef, useState } from "react";
 import RoomDesign1 from "./component/RoomDesign1";
 import { Grid, OrbitControls } from "@react-three/drei";
 import Furniture from "./component/Furniture";
 import SaveResetButton from "./component/SaveResetButton";
+import SideBar from "./component/SideBar";
 
 
 export default function App(){
@@ -17,7 +17,7 @@ export default function App(){
   const [ wallColor, setWallColor ] = useState("");
   const [ wall1Color, setWall1Color ] = useState("#778979");
   const [ wall2Color, setWall2Color ] = useState("#ccdcc1");
-  const [ furniture, setFurniture ] = useState(null as any);
+  const [furniture, setFurniture] = useState<{name: string, position: [number, number, number]}[]>([]);
   const orbitControlsRef = useRef(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function App(){
 
       setWall1Color(design.wall1Color);
       setWall2Color(design.wall2Color);
-      setFurniture(design.furniture || null);
+      setFurniture(design.furniture || []);
 
     } else {
       
@@ -47,7 +47,7 @@ export default function App(){
         setWall1Color("#dbe7e4");
         setWall2Color("#f1f3f2");
       }
-      setFurniture(null);
+      setFurniture([]);
 
     }
 
@@ -65,7 +65,7 @@ export default function App(){
       setWall1Color("#dbe7e4");
       setWall2Color("#f1f3f2");
     }
-    setFurniture(null);
+    setFurniture([]);
 
   }
   
@@ -87,33 +87,46 @@ export default function App(){
   },[wallColor, selectedWall]);
 
   return(
-    <div className=" flex flex-col items-center h-screen justify-center bg-black">
-      <div className=" h-full w-full mt-[20px]">
-        <Suspense fallback={null}>
-          <Canvas camera={{ position: [10, 10, 10] }}>
-            <directionalLight position={[1, 2, 3]} intensity={1.5}/>
-            <ambientLight intensity={1.5}/>
-            <RoomDesign1 setSelectedWall={setSelectedWall} wall1Color={wall1Color} wall2Color={wall2Color}/>
-            <Grid args={[5,5]} cellColor='lightblue' cellThickness={0.1}/>
-            {furniture && (
-              <Furniture
-                position={furniture}
-                onDrag={(pos: [number, number, number]) => setFurniture(pos)}
-                orbitControlsRef={orbitControlsRef}
-              />
-            )}
-            <OrbitControls ref={orbitControlsRef}/>
-          </Canvas>
-        </Suspense>
+    <div className=" w-screen flex h-screen items-center bg-black justify-center relative">
+      <div className=" flex flex-col items-center h-full w-full justify-center bg-black">
+        <div className=" h-full w-full mt-[20px]">
+          <Suspense fallback={null}>
+            <Canvas camera={{ position: [10, 10, 10] }}>
+              <directionalLight position={[1, 2, 3]} intensity={1.5}/>
+              <ambientLight intensity={1.5}/>
+              <RoomDesign1 setSelectedWall={setSelectedWall} wall1Color={wall1Color} wall2Color={wall2Color}/>
+              <Grid args={[5,5]} cellColor='lightblue' cellThickness={0.1}/>
+              {furniture.map((furn, idx) => (
+                <Furniture
+                  key={idx}
+                  position={furn.position}
+                  onDrag={(pos) => {
+                    setFurniture(prev => {
+                      const newFurniture = [...prev];
+                      newFurniture[idx] = { ...newFurniture[idx], position: pos };
+                      return newFurniture;
+                    });
+                  }}
+                  orbitControlsRef={orbitControlsRef}
+                  furnitureName={furn.name}
+                />
+              ))}
+              <OrbitControls ref={orbitControlsRef}/>
+            </Canvas>
+          </Suspense>
+        </div>
+        <div className=" mt-[30px]">
+          <ToggleButtons room={room} roomNumber={roomNumber} setRoomNumber={setRoomNumber}/>
+        </div>
+        <div className="mt-[20px] mb-[20px]">
+          <SaveResetButton wall1color={wall1Color} wall2color={wall2Color} furniture={furniture} room={room} resetRoom={resetRoom}/>
+        </div>
+        {/* <div className="w-[40%] m-[30px]">
+          <BottomBar setWallColor={setWallColor} setFurniture={setFurniture} />
+        </div> */}
       </div>
-      <div className=" mt-[30px]">
-        <ToggleButtons room={room} roomNumber={roomNumber} setRoomNumber={setRoomNumber}/>
-      </div>
-      <div className="mt-[20px]">
-        <SaveResetButton wall1color={wall1Color} wall2color={wall2Color} furniture={furniture} room={room} resetRoom={resetRoom}/>
-      </div>
-      <div className="w-[40%] m-[30px]">
-        <BottomBar setWallColor={setWallColor} setFurniture={setFurniture} />
+      <div className=" absolute right-20 top-30">
+        <SideBar setWallColor={setWallColor} room={room} onAddFurniture={(name: string) => {setFurniture(prev => [...prev, { name, position: [0, 0.4, 0] }])}}/>
       </div>
     </div>
   )

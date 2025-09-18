@@ -13,10 +13,9 @@ export default function SaveResetButton({ wall1color, wall2color, furniture, roo
           [room]: {
             wall1Color: wall1color,
             wall2Color: wall2color,
-            furniture: furniture ? furniture : null,
+            furniture: furniture ,
           }
         }
-      
         setSavedDesign(newDesign);
         localStorage.setItem("roomDesigns", JSON.stringify(newDesign));
         alert("Design Saved!");
