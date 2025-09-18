@@ -1,43 +1,79 @@
 import { useGLTF } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { useDrag } from "@use-gesture/react";
-import { useRef, useState } from "react";
+import { useThree } from "@react-three/fiber";
+import { useEffect, useState } from "react";
+import * as THREE from "three";
 
-const ROOM_SIZE = 1.8; // Define room half-width/depth
+const ROOM_SIZE = 2;
 
-function clampPosition(pos: [number, number, number]): [number, number, number] {
-  const clampedX = Math.min(Math.max(pos[0], -ROOM_SIZE), ROOM_SIZE);
-  const clampedZ = Math.min(Math.max(pos[2], -ROOM_SIZE), ROOM_SIZE);
-  return [clampedX, pos[1], clampedZ];
-}
+export default function Furniture({
+  position,
+  onDrag,
+  orbitControlsRef,
+}: {
+  position?: [number, number, number];
+  onDrag?: (pos: [number, number, number]) => void;
+  orbitControlsRef: any;
+}) {
+  
+  const { scene } = useGLTF("./models/DoubleBed.glb");
+  const [isPicked, setIsPicked] = useState(false);
+  const [pos, setPos] = useState<[number, number, number]>(position ?? [0, 0.4, 0]);
+  const { camera, gl } = useThree();
 
-export default function Furniture({ position, onDrag, orbitControlsRef }: { position?: [number, number, number]; onDrag?: any; orbitControlsRef: any; }) {
-  const { scene } = useGLTF('./models/DoubleBed.glb');
+  const getPointerPosition = (event: MouseEvent): [number, number, number] => {
+    const rect = gl.domElement.getBoundingClientRect();
 
-  const [targetPos, setTargetPos] = useState(position ?? [0, 0.4, 0]);
-  const currentPos = useRef(targetPos);
+    // Convert screen coordinates to normalized device coordinates (-1 to +1)
+    const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-  const bind = useDrag(({ offset: [x, y], first, last }) => {
-    if (orbitControlsRef && orbitControlsRef.current) {
-      orbitControlsRef.current.enabled = !(first || !last); // Disable orbit on drag start/end
+    // Create raycaster
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), camera);
+
+    // Define horizontal plane at y = 0.4
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.4);
+
+    // Get intersection point
+    const intersectionPoint = new THREE.Vector3();
+    raycaster.ray.intersectPlane(plane, intersectionPoint);
+
+    // Clamp to room bounds
+    intersectionPoint.x = Math.min(Math.max(intersectionPoint.x, -ROOM_SIZE), ROOM_SIZE);
+    intersectionPoint.z = Math.min(Math.max(intersectionPoint.z, -ROOM_SIZE), ROOM_SIZE);
+
+    return [intersectionPoint.x, 0.4, intersectionPoint.z];
+  };
+
+  const moveWithPointer = (event: PointerEvent) => {
+    if (isPicked) {
+      const newPos = getPointerPosition(event);
+      setPos(newPos);
+      onDrag?.(newPos);
     }
+  };
 
-    const clampedPos = clampPosition([x, 0.4, y]);
-    setTargetPos(clampedPos);
-    onDrag?.(clampedPos);
-  });
+  useEffect(() => {
+    if (isPicked) {
+      window.addEventListener("pointermove", moveWithPointer);
+      orbitControlsRef?.current && (orbitControlsRef.current.enabled = false);
+    } else {
+      window.removeEventListener("pointermove", moveWithPointer);
+      orbitControlsRef?.current && (orbitControlsRef.current.enabled = true);
+    }
+    return () => window.removeEventListener("pointermove", moveWithPointer);
+  }, [isPicked]);
 
-  useFrame(() => {
-    currentPos.current = [
-      lerp(currentPos.current[0], targetPos[0], 0.1),
-      lerp(currentPos.current[1], targetPos[1], 0.1),
-      lerp(currentPos.current[2], targetPos[2], 0.1),
-    ];
-  });
-
-  function lerp(start: number, end: number, alpha: number): number {
-    return start + (end - start) * alpha;
-  }
-
-  return <primitive object={scene} position={position} scale={0.5} {...bind()} />;
+  return (
+    <primitive
+      object={scene}
+      position={pos}
+      scale={0.5}
+      onPointerDown={(e: React.PointerEvent) => {
+        e.stopPropagation(); // prevent clicks from reaching background
+        setIsPicked(true);
+      }}
+      onPointerUp={() => setIsPicked(false)}
+    />
+  );
 }
