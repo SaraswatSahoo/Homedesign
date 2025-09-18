@@ -3,7 +3,7 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 
-const ROOM_SIZE = 2;
+const ROOM_SIZE = 1.8;
 
 export default function Furniture({
   position,
@@ -63,6 +63,10 @@ export default function Furniture({
     }
     return () => window.removeEventListener("pointermove", moveWithPointer);
   }, [isPicked]);
+
+  useEffect(() => {
+    if (position) setPos(position);
+  }, [position]);
 
   return (
     <primitive

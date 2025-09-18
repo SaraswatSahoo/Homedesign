@@ -6,6 +6,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import RoomDesign1 from "./component/RoomDesign1";
 import { Grid, OrbitControls } from "@react-three/drei";
 import Furniture from "./component/Furniture";
+import SaveResetButton from "./component/SaveResetButton";
 
 
 export default function App(){
@@ -22,14 +23,17 @@ export default function App(){
   useEffect(() => {
 
     if (!room) return;
+
     const savedDesign = JSON.parse(localStorage.getItem("roomDesigns") || "{}");
     const design = savedDesign[room];
+
+    console.log("Loaded design:", design);
 
     if (design) {
 
       setWall1Color(design.wall1Color);
       setWall2Color(design.wall2Color);
-      setFurniture(design.furniture?.position || null);
+      setFurniture(design.furniture || null);
 
     } else {
       
@@ -47,15 +51,23 @@ export default function App(){
 
     }
 
-    savedDesign[room] = {
-      wall1Color,
-      wall2Color,
-      furniture: furniture ? { position: furniture } : null,
-    };
-
-    localStorage.setItem("roomDesigns", JSON.stringify(savedDesign));
-
   }, [room]);
+
+  function resetRoom(rname?: string) {
+
+    if (rname === "Living Room") {
+      setWall1Color("#778979");
+      setWall2Color("#ccdcc1");
+    } else if (rname === "Bedroom") {
+      setWall1Color("#a3c4bc");
+      setWall2Color("#f7ede2");
+    } else if (rname === "Kitchen") {
+      setWall1Color("#dbe7e4");
+      setWall2Color("#f1f3f2");
+    }
+    setFurniture(null);
+
+  }
   
 
   useEffect(()=>{
@@ -97,8 +109,11 @@ export default function App(){
       <div className=" mt-[30px]">
         <ToggleButtons room={room} roomNumber={roomNumber} setRoomNumber={setRoomNumber}/>
       </div>
+      <div className="mt-[20px]">
+        <SaveResetButton wall1color={wall1Color} wall2color={wall2Color} furniture={furniture} room={room} resetRoom={resetRoom}/>
+      </div>
       <div className="w-[40%] m-[30px]">
-        <BottomBar setWallColor={setWallColor} setFurniture={setFurniture}/>
+        <BottomBar setWallColor={setWallColor} setFurniture={setFurniture} />
       </div>
     </div>
   )
